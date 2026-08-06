@@ -1,52 +1,139 @@
-# Hover Portrait
+Hover Portrait Module
+A streamlined portrait‑management and display system for Foundry VTT, using a global portrait directory located directly under the Foundry Data root. Includes a custom sandboxed picker, dynamic portrait handling, and integration with Hover Portrait v2.3.0.
 
-A premium-quality Foundry VTT module that displays a **custom portrait** when hovering over tokens.  
-Includes a **sandboxed portrait picker**, **auto‑discovered folders**, **video support**, and a **clean, modern UI** designed for zero ambiguity and maximum usability.
+📁 Directory Structure
+Global Foundry Data Directory
+All portrait assets live in a root‑level directory, not inside the module:
 
-This module is system‑agnostic and works with **any game system**.
+Code
+Data/
+├─ portraits/                 ← REQUIRED global portrait directory (lowercase)
+│   ├─ actors/
+│   ├─ tokens/
+│   ├─ npc/
+│   └─ custom/
+│
+└─ modules/
+    └─ hover-portrait/        ← Module directory
+        ├─ scripts/
+        │   ├─ hover-portrait.js
+        │   ├─ portrait-picker.js
+        │   └─ portrait-library.js
+        ├─ styles/
+        │   └─ hover-portrait.css
+        └─ module.json
+Portrait Directory Rules
+Required root:
 
----
+Code
+Data/portraits/
+The module never stores portraits inside its own folder.
 
-## ✨ Features
+The custom picker:
 
-### 🎨 Custom Hover Portraits
-- Displays a portrait when hovering over any token.
-- Supports **images and videos** (`png`, `jpg`, `webp`, `gif`, `webm`, `mp4`, etc.).
-- Portraits can be styled with multiple border themes.
+Locks navigation to Data/portraits/
+
+Auto-discovers all subfolders
+
+Prevents browsing above the root
+
+Supports back-navigation and safe media filtering
+
+🎨 Features
+🔒 Sandboxed Global Portrait Picker
+A custom picker replacing Foundry’s default FilePicker for portraits:
+
+Rooted at Data/portraits/
+
+Auto-discovers nested folders
+
+Supports PNG, JPG, WEBP, and Foundry-safe formats
+
+Prevents access to any other Data directories
+
+Clean back-button navigation
+
+Fully player-safe (no write access)
+
+🖼️ Portrait Library UI
+Displays all portraits in a responsive grid
+
+Folder-based categorization (actors, tokens, npc, custom)
+
+Drag-to-select and quick-assign behavior
+
+Smooth transitions and dynamic sizing
+
+🧩 Hover Portrait Integration
+Selected portraits update the static bottom-left portrait frame
+
+Portraits persist across reloads
+
+No global token hooks
+
+No “apply to all tokens” behavior — strictly scoped
+
+⚙️ Installation
+Place the module folder here:
+
+Code
+Data/modules/hover-portrait/
+Ensure the global portrait directory exists:
+
+Code
+Data/portraits/
+Add any subfolders you want:
+
+Code
+Data/portraits/actors/
+Data/portraits/tokens/
+Data/portraits/npc/
+Data/portraits/custom/
+Enable Hover Portrait in:
+
+Game Settings → Manage Modules
+
+🗂️ Adding Portraits
+Simply drop image files anywhere under:
+
+Code
+Data/portraits/
+The module will automatically:
+
+Detect new folders
+
+Display images in the library
+
+Restrict navigation to the portrait tree
+
+🔧 Developer Notes
+All portrait access is routed through the custom picker.
+
+The picker uses Foundry v13+ safe path resolution.
+
+Portrait selections are stored using game.settings.
+
+The module avoids global hooks and global token overrides.
+
+Designed for clean integration with your custom UI logic.
+
+📜 License
+MIT License — free to use, modify, and redistribute.
+
+📬 Support
+Open an issue on the module’s repository for bugs, feature requests, or contributions.
 
 ![full](https://github.com/user-attachments/assets/d5872024-1832-4887-ac54-da798a3ec429)
 ![icon](https://github.com/user-attachments/assets/f2238693-3615-411c-91b6-9749916963e7)
 
 
-### 🗂️ Sandboxed Portrait Picker
-- Fully custom picker — **no Foundry FilePicker UI**.
-- Browses only inside:  
-  `modules/hover-portrait/assets/portraits` You can create additional folders and the module will pick them up.
-- Auto-detects subfolders and creates category buttons.
-- Clean grid layout with image/video previews.
-- One-click assignment to both **actor** and **token** flags.
+
 ![box](https://github.com/user-attachments/assets/c0c27e25-ff21-4ec5-9f7a-9847bf951f60)
 
 ![options](https://github.com/user-attachments/assets/b48eef90-2641-4764-8497-6e46f8e8e042)
 
 
-### 🔄 Token Inheritance
-- Newly created tokens automatically inherit the actor’s saved portrait.
 
-### 🧩 Zero Interference
-- No UI collisions.
-- No resizing logic (removed for stability).
-- No reliance on deprecated Foundry globals.
-
----
-
-## 📦 Installation
-
-### **Method 1: Install via Manifest URL** 
-
-Paste this URL into Foundry’s “Install Module” dialog: 
-
-https://raw.githubusercontent.com/Ramz1337/hover-portrait/main/module.json
 
 
 ### **Method 2: Install from GitHub**
