@@ -1,199 +1,200 @@
-// Hover Portrait v2.3.2 — Static Bottom-Left Edition
-// Final Stability Patch: Prevents off-screen jumps under rapid hover events.
+console.log("Hover Portrait: hover.js loaded");
 
-console.log("Hover Portrait: hover.js v2.3.2 — Static Bottom-Left Edition loaded");
+let hoverTimeout = null;
+let removalTimer = null;
 
-let hoverWrapper = null;
-let hoverElement = null;
-let autoFadeTimeout = null;
-let hoverGrace = false;
+/* ------------------------------------------------------------
+   DYNAMIC FRAME RESIZE FUNCTION
+------------------------------------------------------------ */
+function resizeFrame(frame, w, h) {
+  const maxSize = 260;
+  const aspect = w / h;
 
-const MARGIN = 20;
+  let newW, newH;
 
-// ---------------------------------------------------------
-// Clamp to screen
-// ---------------------------------------------------------
-function clampToScreen(x, y, width, height) {
-  const maxX = window.innerWidth - width;
-  const maxY = window.innerHeight - height;
-
-  return {
-    x: Math.min(Math.max(0, x), Math.max(0, maxX)),
-    y: Math.min(Math.max(0, y), Math.max(0, maxY))
-  };
-}
-
-// ---------------------------------------------------------
-// Fade logic
-// ---------------------------------------------------------
-function startAutoFadeTimer() {
-  if (autoFadeTimeout) clearTimeout(autoFadeTimeout);
-
-  autoFadeTimeout = setTimeout(() => {
-    hideHoverPortrait();
-  }, 7000);
-}
-
-function fadeIn() {
-  if (!hoverElement) return;
-
-  hoverWrapper.style.display = "block";
-
-  requestAnimationFrame(() => {
-    hoverWrapper.classList.remove("hidden");
-    hoverElement.classList.remove("hidden");
-    hoverElement.style.opacity = "0.85";
-  });
-}
-
-function fadeOut() {
-  if (!hoverElement) return;
-
-  hoverWrapper.classList.add("hidden");
-  hoverElement.classList.add("hidden");
-  hoverElement.style.opacity = "0";
-
-  setTimeout(() => {
-    if (hoverWrapper.classList.contains("hidden")) {
-      hoverWrapper.style.display = "none";
-    }
-  }, 300);
-}
-
-// ---------------------------------------------------------
-// Create wrapper + portrait
-// ---------------------------------------------------------
-function createHoverWrapper() {
-  if (hoverWrapper && hoverElement) return hoverWrapper;
-
-  hoverWrapper = document.createElement("div");
-  hoverWrapper.id = "hover-wrapper";
-
-  hoverElement = document.createElement("div");
-  hoverElement.id = "hover-portrait";
-  hoverElement.style.opacity = "0";
-  hoverElement.style.transition = "opacity 0.25s ease";
-
-  hoverWrapper.appendChild(hoverElement);
-  document.body.appendChild(hoverWrapper);
-
-  return hoverWrapper;
-}
-
-// ---------------------------------------------------------
-// Dynamic Clamp (Best Practice)
-// ---------------------------------------------------------
-function applyDynamicClamp(media) {
-  const naturalW = media.naturalWidth || media.videoWidth;
-  const naturalH = media.naturalHeight || media.videoHeight;
-
-  if (!naturalW || !naturalH) return;
-
-  const maxW = window.innerWidth * 0.30;
-  const maxH = window.innerHeight * 0.30;
-
-  const scale = Math.min(maxW / naturalW, maxH / naturalH, 1);
-
-  hoverElement.style.width = naturalW * scale + "px";
-  hoverElement.style.height = naturalH * scale + "px";
-}
-
-// ---------------------------------------------------------
-// Bottom-left positioning (final fixed version)
-// ---------------------------------------------------------
-function positionBottomLeft(wrapper) {
-  // Ensure wrapper is visible before measuring
-  wrapper.style.display = "block";
-  wrapper.classList.remove("hidden");
-
-  requestAnimationFrame(() => {
-    const w = wrapper.offsetWidth;
-    const h = wrapper.offsetHeight;
-
-    const bottomLeft = clampToScreen(
-      MARGIN,
-      window.innerHeight - h - MARGIN,
-      w,
-      h
-    );
-
-    wrapper.style.left = bottomLeft.x + "px";
-    wrapper.style.top = bottomLeft.y + "px";
-  });
-}
-
-// ---------------------------------------------------------
-// Main display logic
-// ---------------------------------------------------------
-async function showHoverPortrait(token) {
-  let path =
-    token.actor?.getFlag("hover-portrait", "img") ||
-    token.document.getFlag("hover-portrait", "img") ||
-    token.actor?.img ||
-    token.document.texture?.src ||
-    token.document.texture?.original ||
-    "icons/svg/mystery-man.svg";
-
-  hoverGrace = true;
-  setTimeout(() => (hoverGrace = false), 5000);
-
-  const wrapper = createHoverWrapper();
-
-  hoverElement.innerHTML = "";
-
-  const style = game.settings.get("hover-portrait", "borderStyle");
-  hoverElement.className = "";
-  hoverElement.classList.add("hover-portrait-" + style);
-
-  let media;
-  const isVideo = /\.(mp4|webm|ogg|m4v)$/i.test(path);
-
-  if (isVideo) {
-    media = document.createElement("video");
-    media.src = path;
-    media.autoplay = true;
-    media.loop = true;
-    media.muted = true;
-    media.playsInline = true;
-
-    media.onloadeddata = () => {
-      applyDynamicClamp(media);
-      positionBottomLeft(wrapper);
-      fadeIn();
-      startAutoFadeTimer();
-    };
+  if (aspect > 1) {
+    newW = maxSize;
+    newH = maxSize / aspect;
   } else {
-    media = document.createElement("img");
-    media.src = path;
-
-    media.onload = () => {
-      applyDynamicClamp(media);
-      positionBottomLeft(wrapper);
-      fadeIn();
-      startAutoFadeTimer();
-    };
+    newH = maxSize;
+    newW = maxSize * aspect;
   }
 
-  media.style.pointerEvents = "none";
-  hoverElement.appendChild(media);
+  frame.style.width = `${newW}px`;
+  frame.style.height = `${newH}px`;
 }
 
-// ---------------------------------------------------------
-// Hide portrait
-// ---------------------------------------------------------
-function hideHoverPortrait() {
-  if (!hoverElement) return;
-  if (hoverGrace) return;
-  fadeOut();
-}
-
-// ---------------------------------------------------------
-// Hook: Show/hide portrait on token hover
-// ---------------------------------------------------------
+/* ------------------------------------------------------------
+   MAIN HOVER HANDLER
+------------------------------------------------------------ */
 Hooks.on("hoverToken", (token, hovered) => {
-  if (hovered) {
-    showHoverPortrait(token);
-  } else {
-    hideHoverPortrait();
+
+  // ------------------------------------------------------------
+  // WHEN HOVER ENDS
+  // ------------------------------------------------------------
+  if (!hovered) {
+    clearTimeout(hoverTimeout);
+
+    clearTimeout(removalTimer);
+    removalTimer = setTimeout(() => {
+      const wrapper = document.getElementById("hover-wrapper");
+      if (wrapper) wrapper.remove();
+    }, 10000);
+
+    return;
   }
+
+  // ------------------------------------------------------------
+  // WHEN HOVER BEGINS
+  // ------------------------------------------------------------
+  const delay = game.settings.get("hover-portrait", "hoverDelay");
+  const border = game.settings.get("hover-portrait", "borderStyle");
+  const path = token.document.getFlag("hover-portrait", "portraitPath");
+
+  if (!path) return;
+
+  hoverTimeout = setTimeout(() => {
+
+    const oldWrapper = document.getElementById("hover-wrapper");
+    if (oldWrapper) oldWrapper.remove();
+
+    // ⭐ PER-USER POSITION (client settings)
+    const savedTop = game.settings.get("hover-portrait", "portraitTop");
+    const savedLeft = game.settings.get("hover-portrait", "portraitLeft");
+    const pinned = game.settings.get("hover-portrait", "portraitPinned");
+
+    const wrapper = document.createElement("div");
+    wrapper.id = "hover-wrapper";
+
+    const frame = document.createElement("div");
+    frame.id = "hover-portrait";
+    frame.classList.add(`hover-portrait-${border}`);
+
+    frame.style.position = "absolute";
+    frame.style.top = `${savedTop}px`;
+    frame.style.left = `${savedLeft}px`;
+
+    /* ------------------------------------------------------------
+       PIN BUTTON
+    ------------------------------------------------------------ */
+    const pinBtn = document.createElement("div");
+    pinBtn.id = "hover-pin-btn";
+    pinBtn.textContent = pinned ? "⚔" : "🛡";
+    pinBtn.style.position = "absolute";
+    pinBtn.style.top = "-12px";
+    pinBtn.style.right = "-12px";
+    pinBtn.style.fontSize = "22px";
+    pinBtn.style.cursor = "pointer";
+    pinBtn.style.pointerEvents = "auto";
+    pinBtn.style.zIndex = "1000000000";
+
+    frame.appendChild(pinBtn);
+
+    /* ------------------------------------------------------------
+       MEDIA ELEMENT
+    ------------------------------------------------------------ */
+    let media;
+
+    if (path.endsWith(".webm") || path.endsWith(".mp4")) {
+      media = document.createElement("video");
+      media.src = path;
+      media.autoplay = true;
+      media.loop = true;
+      media.muted = true;
+
+      const videoWrap = document.createElement("div");
+      videoWrap.classList.add("hover-video-wrapper");
+      videoWrap.appendChild(media);
+      frame.appendChild(videoWrap);
+
+      media.onloadedmetadata = () => {
+        resizeFrame(frame, media.videoWidth, media.videoHeight);
+      };
+
+    } else {
+      media = document.createElement("img");
+      media.src = path;
+      frame.appendChild(media);
+
+      media.onload = () => {
+        resizeFrame(frame, media.naturalWidth, media.naturalHeight);
+      };
+    }
+
+    wrapper.appendChild(frame);
+    document.body.appendChild(wrapper);
+
+    /* ------------------------------------------------------------
+       DRAGGING LOGIC (PER-USER SAVE)
+    ------------------------------------------------------------ */
+    if (!pinned) {
+      let dragging = false;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      frame.addEventListener("mousedown", (ev) => {
+        dragging = true;
+        offsetX = ev.clientX - frame.offsetLeft;
+        offsetY = ev.clientY - frame.offsetTop;
+
+        clearTimeout(removalTimer);
+      });
+
+      window.addEventListener("mousemove", (ev) => {
+        if (!dragging) return;
+
+        const newLeft = ev.clientX - offsetX;
+        const newTop = ev.clientY - offsetY;
+
+        frame.style.left = `${newLeft}px`;
+        frame.style.top = `${newTop}px`;
+      });
+
+      window.addEventListener("mouseup", () => {
+        if (!dragging) return;
+        dragging = false;
+
+        // ⭐ SAVE POSITION PER USER
+        game.settings.set("hover-portrait", "portraitTop", parseInt(frame.style.top));
+        game.settings.set("hover-portrait", "portraitLeft", parseInt(frame.style.left));
+
+        clearTimeout(removalTimer);
+        removalTimer = setTimeout(() => {
+          const wrapper = document.getElementById("hover-wrapper");
+          if (wrapper) wrapper.remove();
+        }, 10000);
+      });
+    }
+
+    /* ------------------------------------------------------------
+       PIN BUTTON CLICK (PER-USER SAVE)
+    ------------------------------------------------------------ */
+    pinBtn.addEventListener("click", () => {
+      const newPinned = !pinned;
+
+      // ⭐ SAVE PIN STATE PER USER
+      game.settings.set("hover-portrait", "portraitPinned", newPinned);
+
+      pinBtn.textContent = newPinned ? "⚔" : "🛡";
+
+      wrapper.remove();
+      Hooks.call("hoverToken", token, true);
+    });
+
+    /* ------------------------------------------------------------
+       MOUSE ENTER / LEAVE LOGIC
+    ------------------------------------------------------------ */
+    frame.addEventListener("mouseenter", () => {
+      clearTimeout(removalTimer);
+    });
+
+    frame.addEventListener("mouseleave", () => {
+      clearTimeout(removalTimer);
+      removalTimer = setTimeout(() => {
+        const wrapper = document.getElementById("hover-wrapper");
+        if (wrapper) wrapper.remove();
+      }, 10000);
+    });
+
+  }, delay);
 });

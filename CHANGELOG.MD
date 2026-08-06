@@ -5,10 +5,42 @@ and this project adheres to **Semantic Versioning**.
 
 ---
 
+## [2.4.0] – 06‑08‑2026
+### Added
+- **Global portrait directory support** using the new root‑level path:
+
+Replaces all module‑local portrait storage.
+- **New sandboxed portrait picker** rooted strictly at `Data/portraits/` with:
+- Auto‑discovered subfolders  
+- Back‑button navigation  
+- Safe media filtering  
+- No access above the root directory
+- **New Portrait Library UI** with responsive grid layout and folder categorization.
+- **Full integration with Hover Portrait v2.3.x** using the new global portrait system.
+- **Dynamic portrait assignment flow** using the new picker + library combination.
+- **Updated path resolution** for Foundry v13+ using safe, browser‑facing asset paths.
+
+### Improved
+- Strengthened picker sandboxing to guarantee users cannot escape `Data/portraits/`.
+- Unified portrait selection logic across picker, library, and hover display.
+- Cleaned up internal structure to remove legacy module‑local portrait references.
+- Improved UI responsiveness and sizing behavior in the portrait library.
+- Refactored `portrait-library.js` and `portrait-picker.js` for clarity and future maintainability.
+- Enhanced media-type handling (png/jpg/webp) with consistent preview behavior.
+
+### Fixed
+- Corrected path resolution issues caused by Foundry v13’s updated FilePicker API.
+- Eliminated incorrect module-relative paths that caused missing portrait previews.
+- Fixed hidden-state issues in the portrait library when switching folders rapidly.
+- Resolved picker navigation bugs when returning from nested folders.
+- Patched rare timing issues where the hover portrait could load before the wrapper was visible.
+
+---
+
 ## [2.3.2] – 02‑01‑2026
 ### Fixed
 - Resolved a second race condition where the portrait could still spawn off‑screen during rapid hover events.
-- Corrected measurement timing by ensuring the wrapper becomes visible **before** calculating width/height.
+- Corrected measurement timing by ensuring the wrapper becomes visible before calculating width/height.
 - Prevented zero‑height/zero‑width measurement errors caused by fade-out transitions.
 - Eliminated rare drift caused by cached images loading before the wrapper was unhidden.
 
@@ -64,15 +96,15 @@ and this project adheres to **Semantic Versioning**.
 ### Added
 - Initial public release of Hover Portrait.
 - Custom sandboxed portrait picker with:
-  - Auto‑discovered portrait folders  
-  - Category buttons  
-  - Grid layout with image/video previews  
-  - One‑click assignment to actor + token flags  
+- Auto‑discovered portrait folders  
+- Category buttons  
+- Grid layout with image/video previews  
+- One‑click assignment to actor + token flags
 - Hover portrait display system with:
-  - Border style selector  
-  - Pinned portrait support  
-  - Video support (`webm`, `mp4`, `ogg`, `m4v`)  
-  - Token inheritance: new tokens automatically inherit actor portrait  
+- Border style selector  
+- Pinned portrait support  
+- Video support (webm, mp4, ogg, m4v)  
+- Token inheritance: new tokens automatically inherit actor portrait
 - Full Foundry v13 compatibility.
 - Clean, isolated CSS with no UI collisions.
 
@@ -94,3 +126,4 @@ and this project adheres to **Semantic Versioning**.
 - Drag‑and‑drop portrait assignment.
 - Recent portraits quick‑select row.
 - Additional border themes.
+

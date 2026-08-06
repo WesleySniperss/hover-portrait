@@ -1,0 +1,60 @@
+/* Main container */
+.portrait-library-container {
+  padding: 12px;
+  background: #1e1e1e;      /* Dark but visible */
+  color: #f0f0f0;           /* Light text */
+  font-size: 14px;
+}
+
+/* Folder list */
+.portrait-folders {
+  margin-bottom: 12px;
+}
+
+.portrait-folder {
+  cursor: pointer;
+  padding: 6px 10px;
+  background: #2c2c2c;      /* Visible dark grey */
+  border: 1px solid #555;   /* Visible border */
+  border-radius: 4px;
+  margin-bottom: 6px;
+  color: #ffffff;           /* White text */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.portrait-folder:hover {
+  background: #3a3a3a;
+  border-color: gold;
+}
+
+/* Portrait grid */
+.portrait-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+/* Portrait entries */
+.portrait-entry {
+  border: 2px solid #555;
+  padding: 4px;
+  cursor: pointer;
+  background: #2c2c2c;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.portrait-entry:hover {
+  border-color: gold;
+}
+
+/* Images and videos */
+.portrait-entry img,
+.portrait-entry video {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 4px;
+}

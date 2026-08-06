@@ -1,0 +1,39 @@
+<div class="portrait-library-container">
+
+  <h2>Select Portrait for {{tokenName}}</h2>
+
+  <h3>Folders</h3>
+  <div class="portrait-folders">
+    {{#each dirs}}
+      <div class="portrait-folder" data-folder="{{this}}">
+        <i class="fas fa-folder"></i> {{this}}
+      </div>
+    {{/each}}
+  </div>
+
+  {{!-- ⭐ BACK BUTTON (only appears inside subfolders) --}}
+  {{#if currentFolder}}
+    <div class="portrait-back" data-folder="..">
+      <i class="fas fa-arrow-left"></i> Back
+    </div>
+  {{/if}}
+
+  <h3>Portraits</h3>
+  <div class="portrait-grid">
+    {{#each files}}
+      <div class="portrait-entry" data-path="{{this.path}}">
+
+        {{#if this.isImage}}
+          <img src="{{this.path}}" />
+        {{/if}}
+
+        {{#if this.isVideo}}
+          <video src="{{this.path}}" autoplay muted loop></video>
+        {{/if}}
+
+      </div>
+    {{/each}}
+  </div>
+
+</div>
+

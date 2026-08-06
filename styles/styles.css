@@ -1,4 +1,7 @@
-/* Hover Portrait CSS v2.3 — Static Bottom-Left Edition */
+/* ---------------------------------------------------------
+   Hover Portrait CSS v2.4 — Movable + Pinned Edition
+--------------------------------------------------------- */
+
 /* ---------------------------------------------------------
    BASE ELEMENT STYLES
 --------------------------------------------------------- */
@@ -19,6 +22,13 @@
   z-index: 999999999 !important;
   display: flex !important;
   flex-direction: column !important;
+
+  /* ⭐ NEW: draggable cursor */
+  cursor: grab !important;
+}
+
+#hover-portrait:active {
+  cursor: grabbing !important;
 }
 
 #hover-portrait img,
@@ -28,6 +38,26 @@
   object-fit: contain !important;
   display: block !important;
   pointer-events: none !important;
+}
+
+/* ---------------------------------------------------------
+   PIN BUTTON
+--------------------------------------------------------- */
+
+#hover-pin-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  font-size: 22px;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 1000000000;
+
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 6px;
+  border-radius: 6px;
+  box-shadow: 0 0 6px #000;
+  user-select: none;
 }
 
 /* ---------------------------------------------------------
@@ -69,70 +99,4 @@
   border: 3px solid rgba(0,180,60,0.7) !important;
   border-radius: 10px !important;
   box-shadow:
-    0 0 12px rgba(0,180,60,0.7) !important,
-    0 0 24px rgba(0,120,40,0.5) !important,
-    inset 0 0 10px rgba(0,200,80,0.4) !important;
-  background: rgba(0,20,0,0.4) !important;
-}
-
-.hover-portrait-necromancer {
-  border: 3px solid rgba(180,0,0,0.7) !important;
-  border-radius: 10px !important;
-  box-shadow:
-    0 0 12px rgba(180,0,0,0.8) !important,
-    0 0 24px rgba(120,0,0,0.5) !important,
-    inset 0 0 10px rgba(255,0,0,0.4) !important;
-  background: rgba(20,0,0,0.4) !important;
-}
-
-.hover-portrait-steel {
-  border: 3px solid rgba(180,180,180,0.7) !important;
-  border-radius: 6px !important;
-  box-shadow:
-    0 0 10px rgba(200,200,200,0.5) !important,
-    inset 0 0 8px rgba(255,255,255,0.3) !important;
-  background: rgba(30,30,30,0.4) !important;
-}
-
-.hover-portrait-gold {
-  border: 3px solid rgba(255,215,0,0.8) !important;
-  border-radius: 10px !important;
-  box-shadow:
-    0 0 12px rgba(255,215,0,0.8) !important,
-    0 0 24px rgba(255,200,0,0.5) !important,
-    inset 0 0 10px rgba(255,240,150,0.4) !important;
-  background: rgba(40,30,0,0.4) !important;
-}
-
-.hover-portrait-moon {
-  border: 3px solid rgba(180,180,255,0.7) !important;
-  border-radius: 10px !important;
-  box-shadow:
-    0 0 12px rgba(180,180,255,0.8) !important,
-    0 0 24px rgba(120,120,255,0.5) !important,
-    inset 0 0 10px rgba(200,200,255,0.4) !important;
-  background: rgba(10,10,30,0.4) !important;
-}
-
-.hover-portrait-dragon {
-  border: 3px solid rgba(120,40,0,0.8) !important;
-  border-radius: 12px !important;
-  box-shadow:
-    0 0 14px rgba(255,120,0,0.7) !important,
-    inset 0 0 12px rgba(255,80,0,0.4) !important;
-  background: rgba(30,10,0,0.5) !important;
-}
-
-/* ---------------------------------------------------------
-   FIX: Prevent Invisible Overlay Blocking UI
---------------------------------------------------------- */
-
-#hover-portrait.hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-#hover-wrapper.hidden {
-  pointer-events: none !important;
-  opacity: 0 !important;
-}
+    0 0 12px rgba
