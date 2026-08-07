@@ -25,6 +25,21 @@ Hooks.once("init", () => {
     default: "fantasy"
   });
 
+  // Portrait source: which image to show when no assigned portrait exists
+  game.settings.register("hover-portrait", "portraitSource", {
+    name: "Hover Portrait Source",
+    hint: "Which image to show when hovering a token. An assigned portrait is always preferred; this setting selects the fallback when none is set.",
+    scope: "client",
+    config: true,
+    type: String,
+    choices: {
+      portrait: "Assigned Portrait",
+      actor: "Actor Image",
+      token: "Token Image"
+    },
+    default: "actor"
+  });
+
   // Hover delay
   game.settings.register("hover-portrait", "hoverDelay", {
     name: "Hover Delay",
