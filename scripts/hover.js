@@ -49,11 +49,7 @@ Hooks.on("hoverToken", (token, hovered) => {
   // ------------------------------------------------------------
   const delay = game.settings.get("hover-portrait", "hoverDelay");
   const border = game.settings.get("hover-portrait", "borderStyle");
-  const source = game.settings.get("hover-portrait", "portraitSource");
-  const assigned = token.document.getFlag("hover-portrait", "portraitPath");
-  let path = assigned;
-  if (!path && source === "actor") path = token.actor?.img;
-  if (!path && source === "token") path = token.document.texture?.src || token.document.img;
+  const path = token.document.getFlag("hover-portrait", "portraitPath");
 
   if (!path) return;
 
