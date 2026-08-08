@@ -2,7 +2,7 @@
   "id": "hover-portrait",
   "title": "Hover Portrait",
   "description": "Displays a portrait or video when hovering a token. Includes a portrait library UI and global portrait directory support.",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "type": "module",
 
   "compatibility": {
