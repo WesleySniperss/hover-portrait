@@ -2,29 +2,47 @@
 
   <h2>Select Portrait for {{tokenName}}</h2>
 
-  <h3>Folders</h3>
-  <div class="portrait-folders">
-    {{#each dirs}}
-      <div class="portrait-folder" data-folder="{{this}}">
-        <i class="fas fa-folder"></i> {{this}}
-      </div>
-    {{/each}}
+  <div class="portrait-actions">
+    <button type="button" data-action="choose"><i class="fa-solid fa-file-image"></i> Choose a file…</button>
+    {{#if assigned}}
+      <button type="button" data-action="clear"><i class="fa-solid fa-xmark"></i> Remove portrait</button>
+    {{/if}}
   </div>
+  {{#if assigned}}
+    <p class="portrait-current">Current portrait: {{assignedLabel}}</p>
+  {{else}}
+    <p class="portrait-current">No portrait assigned: hovering shows the one of the Portrait Source setting.</p>
+  {{/if}}
+  {{#if notice}}
+    <p class="portrait-notice">{{notice}}</p>
+  {{/if}}
+
+  {{#if folderLabel}}
+    <h3>Folders <span class="portrait-path">{{folderLabel}}</span></h3>
+  {{/if}}
 
   {{!-- ⭐ BACK BUTTON (only appears inside subfolders) --}}
-  {{#if currentFolder}}
-    <div class="portrait-back" data-folder="..">
+  {{#if inFolder}}
+    <div class="portrait-back" data-action="back">
       <i class="fas fa-arrow-left"></i> Back
     </div>
   {{/if}}
 
+  <div class="portrait-folders">
+    {{#each dirs}}
+      <div class="portrait-folder" data-action="folder" data-path="{{this.path}}">
+        <i class="fas fa-folder"></i> {{this.name}}
+      </div>
+    {{/each}}
+  </div>
+
   <h3>Portraits</h3>
   <div class="portrait-grid">
     {{#each files}}
-      <div class="portrait-entry" data-path="{{this.path}}">
+      <div class="portrait-entry" data-action="pick" data-path="{{this.path}}" data-tooltip="{{this.name}}">
 
         {{#if this.isImage}}
-          <img src="{{this.path}}" />
+          <img src="{{this.path}}" loading="lazy" />
         {{/if}}
 
         {{#if this.isVideo}}
@@ -32,8 +50,9 @@
         {{/if}}
 
       </div>
+    {{else}}
+      <p class="portrait-empty">No portraits here yet: put images or videos in this folder, or choose a file.</p>
     {{/each}}
   </div>
 
 </div>
-

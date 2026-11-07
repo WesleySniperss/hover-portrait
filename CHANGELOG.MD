@@ -6,6 +6,35 @@ and this project adheres to Semantic Versioning.
 
 ---
 
+## [2.5.0] – 07-11-2026
+### Fixed (Foundry v14)
+
+    Hover portraits show out of the box again: the Portrait Source setting described for 2.4.1 was missing from
+    the code. hover-portrait.portraitSource is a client setting with these choices:
+        - Assigned Portrait only
+        - Actor Image (default; else the token image)
+        - Token Image
+    The actor image is shown only to users who may see the actor (Limited or more), others get the token image.
+    The default mystery-man art is never shown.
+
+    Portrait Library opened with an error when its folder did not exist. It now looks in Data/portraits (as
+    documented) and in Data/public/portraits (2.4.x), and creates Data/portraits for the GM when neither exists.
+
+    Portraits assigned by older versions (flag "img" on the token or actor) are shown too.
+
+    Every portrait added mouse listeners to the window that were never removed; dragging now cleans up after itself.
+
+    A portrait position saved on a larger screen is brought back into the window.
+
+### Changed
+
+    Portrait Library is an ApplicationV2 window (no V1 Application or jQuery).
+    New "Choose a file…" button (any image or video, through Foundry's file picker) and "Remove portrait".
+    Assigning a portrait sets it on the token and on its actor, so the actor's other tokens and new ones show it too.
+    Compatibility: Foundry v13 to v14.
+
+---
+
 ## [2.4.1] – 08‑08‑2026
 ### Added
 

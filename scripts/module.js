@@ -25,6 +25,21 @@ Hooks.once("init", () => {
     default: "fantasy"
   });
 
+  // What a token without an assigned portrait shows
+  game.settings.register("hover-portrait", "portraitSource", {
+    name: "Portrait Source",
+    hint: "What to show for tokens without a portrait assigned in the Portrait Library. Assigned portraits always come first. The actor image is shown only to those who may see the actor, others get the token image.",
+    scope: "client",
+    config: true,
+    type: String,
+    choices: {
+      assigned: "Assigned Portrait only",
+      actor: "Actor Image (else the token image)",
+      token: "Token Image"
+    },
+    default: "actor"
+  });
+
   // Hover delay
   game.settings.register("hover-portrait", "hoverDelay", {
     name: "Hover Delay",

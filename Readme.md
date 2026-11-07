@@ -1,4 +1,8 @@
 Hover Portrait
+> **This fork** (WesleySniperss) runs on Foundry v14: hover portraits fall back to the actor or token image out of the box,
+> and the Portrait Library works without a prepared folder and can pick any file. See CHANGELOG.MD (2.5.0).
+> Install manifest: https://raw.githubusercontent.com/WesleySniperss/hover-portrait/main/module.json
+
 A premium‑quality Foundry VTT module that displays a custom portrait when hovering over tokens.
 Includes a sandboxed global portrait picker, auto‑discovered folders, video support, and a clean, modern UI designed for zero ambiguity and maximum usability.
 

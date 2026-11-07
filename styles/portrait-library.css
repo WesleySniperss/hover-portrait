@@ -58,3 +58,67 @@
   object-fit: cover;
   border-radius: 4px;
 }
+
+/* Window (ApplicationV2): the dark container fills it */
+.portrait-library .window-content {
+  padding: 0;
+}
+
+.portrait-library-container {
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+/* Choose a file / remove */
+.portrait-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.portrait-actions button {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 4px 10px;
+}
+
+.portrait-current,
+.portrait-empty,
+.portrait-path {
+  color: #b8b8b8;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.portrait-path {
+  font-weight: normal;
+  margin-left: 6px;
+}
+
+.portrait-notice {
+  padding: 6px 10px;
+  border: 1px solid #a07a2c;
+  border-radius: 4px;
+  background: #33290f;
+  color: #f3d894;
+}
+
+.portrait-back {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #2c2c2c;
+}
+
+.portrait-back:hover {
+  border-color: gold;
+}
+
+.portrait-grid .portrait-empty {
+  grid-column: 1 / -1;
+}

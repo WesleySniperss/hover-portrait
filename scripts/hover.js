@@ -1,200 +1,169 @@
 console.log("Hover Portrait: hover.js loaded");
 
-let hoverTimeout = null;
-let removalTimer = null;
+(() => {
+  const MODULE = "hover-portrait";
+  const LINGER = 10000;          // the portrait stays this long after the pointer left the token (ms)
+  const MAX_SIZE = 260;          // of the longer side of the portrait (px)
+  const VIDEO = /\.(webm|mp4|m4v|ogv)$/i;
+  let hoverTimeout = null;
+  let removalTimer = null;
 
-/* ------------------------------------------------------------
-   DYNAMIC FRAME RESIZE FUNCTION
------------------------------------------------------------- */
-function resizeFrame(frame, w, h) {
-  const maxSize = 260;
-  const aspect = w / h;
+  /* ------------------------------------------------------------
+     PORTRAIT SOURCE
+  ------------------------------------------------------------ */
 
-  let newW, newH;
-
-  if (aspect > 1) {
-    newW = maxSize;
-    newH = maxSize / aspect;
-  } else {
-    newH = maxSize;
-    newW = maxSize * aspect;
+  // Foundry's placeholder art says nothing about a token
+  function isPlaceholder(src) {
+    return !src || (src === CONST.DEFAULT_TOKEN) || /icons\/svg\/mystery-man/.test(src);
   }
 
-  frame.style.width = `${newW}px`;
-  frame.style.height = `${newH}px`;
-}
+  // The portrait chosen in the Portrait Library: for this token, or for its actor (all of its tokens). "img" is where
+  // older versions kept it.
+  function getAssignedPortrait(token) {
+    const doc = token.document;
+    const actor = token.actor;
+    return doc.getFlag(MODULE, "portraitPath") || doc.getFlag(MODULE, "img")
+      || actor?.getFlag(MODULE, "portraitPath") || actor?.getFlag(MODULE, "img") || null;
+  }
 
-/* ------------------------------------------------------------
-   MAIN HOVER HANDLER
------------------------------------------------------------- */
-Hooks.on("hoverToken", (token, hovered) => {
+  // What to show for a token: its assigned portrait, or else (Portrait Source setting) the actor image or the token
+  // image. The actor image only for those who may see the actor, others get the token image.
+  function getPortraitPath(token) {
+    const assigned = getAssignedPortrait(token);
+    if (assigned) return assigned;
+    const source = game.settings.get(MODULE, "portraitSource");
+    if (source === "assigned") return null;
+    const tokenImage = token.document.texture?.src;
+    const actor = token.actor;
+    if ((source === "actor") && actor && (game.user.isGM || actor.testUserPermission(game.user, "LIMITED"))
+      && !isPlaceholder(actor.img)) return actor.img;
+    return isPlaceholder(tokenImage) ? null : tokenImage;
+  }
 
-  // ------------------------------------------------------------
-  // WHEN HOVER ENDS
-  // ------------------------------------------------------------
-  if (!hovered) {
-    clearTimeout(hoverTimeout);
+  /* ------------------------------------------------------------
+     THE PORTRAIT WINDOW
+  ------------------------------------------------------------ */
 
+  // Fit the frame to the picture, the longer side MAX_SIZE
+  function resizeFrame(frame, w, h) {
+    if (!w || !h) return;
+    const aspect = w / h;
+    const width = (aspect > 1) ? MAX_SIZE : MAX_SIZE * aspect;
+    const height = (aspect > 1) ? MAX_SIZE / aspect : MAX_SIZE;
+    frame.style.width = `${width}px`;
+    frame.style.height = `${height}px`;
+  }
+
+  function removePortrait() {
     clearTimeout(removalTimer);
-    removalTimer = setTimeout(() => {
-      const wrapper = document.getElementById("hover-wrapper");
-      if (wrapper) wrapper.remove();
-    }, 10000);
-
-    return;
+    document.getElementById("hover-wrapper")?.remove();
   }
 
-  // ------------------------------------------------------------
-  // WHEN HOVER BEGINS
-  // ------------------------------------------------------------
-  const delay = game.settings.get("hover-portrait", "hoverDelay");
-  const border = game.settings.get("hover-portrait", "borderStyle");
-  const path = token.document.getFlag("hover-portrait", "portraitPath");
+  function scheduleRemoval() {
+    clearTimeout(removalTimer);
+    removalTimer = setTimeout(removePortrait, LINGER);
+  }
 
-  if (!path) return;
+  function showPortrait(token) {
+    const path = getPortraitPath(token);
+    if (!path) return;
+    removePortrait();
 
-  hoverTimeout = setTimeout(() => {
-
-    const oldWrapper = document.getElementById("hover-wrapper");
-    if (oldWrapper) oldWrapper.remove();
-
-    // ⭐ PER-USER POSITION (client settings)
-    const savedTop = game.settings.get("hover-portrait", "portraitTop");
-    const savedLeft = game.settings.get("hover-portrait", "portraitLeft");
-    const pinned = game.settings.get("hover-portrait", "portraitPinned");
+    const border = game.settings.get(MODULE, "borderStyle");
+    const pinned = game.settings.get(MODULE, "portraitPinned");
+    // a position saved on a larger screen is brought back into the window
+    const left = Math.clamp(game.settings.get(MODULE, "portraitLeft"), 0, Math.max(window.innerWidth - 120, 0));
+    const top = Math.clamp(game.settings.get(MODULE, "portraitTop"), 0, Math.max(window.innerHeight - 120, 0));
 
     const wrapper = document.createElement("div");
     wrapper.id = "hover-wrapper";
-
     const frame = document.createElement("div");
     frame.id = "hover-portrait";
     frame.classList.add(`hover-portrait-${border}`);
-
     frame.style.position = "absolute";
-    frame.style.top = `${savedTop}px`;
-    frame.style.left = `${savedLeft}px`;
+    frame.style.left = `${left}px`;
+    frame.style.top = `${top}px`;
+    frame.style.width = frame.style.height = `${MAX_SIZE}px`;
 
-    /* ------------------------------------------------------------
-       PIN BUTTON
-    ------------------------------------------------------------ */
-    const pinBtn = document.createElement("div");
-    pinBtn.id = "hover-pin-btn";
-    pinBtn.textContent = pinned ? "⚔" : "🛡";
-    pinBtn.style.position = "absolute";
-    pinBtn.style.top = "-12px";
-    pinBtn.style.right = "-12px";
-    pinBtn.style.fontSize = "22px";
-    pinBtn.style.cursor = "pointer";
-    pinBtn.style.pointerEvents = "auto";
-    pinBtn.style.zIndex = "1000000000";
+    // Pin button: a pinned portrait can't be moved
+    const pin = document.createElement("div");
+    pin.id = "hover-pin-btn";
+    pin.textContent = pinned ? "⚔" : "🛡";
+    pin.title = pinned ? "Unpin (let it be moved)" : "Pin in place";
+    pin.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      await game.settings.set(MODULE, "portraitPinned", !pinned);
+      showPortrait(token);
+    });
+    frame.appendChild(pin);
 
-    frame.appendChild(pinBtn);
-
-    /* ------------------------------------------------------------
-       MEDIA ELEMENT
-    ------------------------------------------------------------ */
-    let media;
-
-    if (path.endsWith(".webm") || path.endsWith(".mp4")) {
-      media = document.createElement("video");
-      media.src = path;
-      media.autoplay = true;
-      media.loop = true;
-      media.muted = true;
-
+    // The picture (an image or a looping video)
+    if (VIDEO.test(path.split("?")[0])) {
+      const video = document.createElement("video");
+      Object.assign(video, { src: path, autoplay: true, loop: true, muted: true, playsInline: true });
+      video.addEventListener("loadedmetadata", () => resizeFrame(frame, video.videoWidth, video.videoHeight));
       const videoWrap = document.createElement("div");
       videoWrap.classList.add("hover-video-wrapper");
-      videoWrap.appendChild(media);
+      videoWrap.appendChild(video);
       frame.appendChild(videoWrap);
-
-      media.onloadedmetadata = () => {
-        resizeFrame(frame, media.videoWidth, media.videoHeight);
-      };
-
     } else {
-      media = document.createElement("img");
-      media.src = path;
-      frame.appendChild(media);
-
-      media.onload = () => {
-        resizeFrame(frame, media.naturalWidth, media.naturalHeight);
-      };
+      const image = document.createElement("img");
+      image.addEventListener("load", () => resizeFrame(frame, image.naturalWidth, image.naturalHeight));
+      image.addEventListener("error", () => wrapper.remove());
+      image.src = path;
+      frame.appendChild(image);
     }
 
     wrapper.appendChild(frame);
     document.body.appendChild(wrapper);
 
-    /* ------------------------------------------------------------
-       DRAGGING LOGIC (PER-USER SAVE)
-    ------------------------------------------------------------ */
+    // Dragging, the position saved per user
     if (!pinned) {
-      let dragging = false;
-      let offsetX = 0;
-      let offsetY = 0;
-
-      frame.addEventListener("mousedown", (ev) => {
-        dragging = true;
-        offsetX = ev.clientX - frame.offsetLeft;
-        offsetY = ev.clientY - frame.offsetTop;
-
+      frame.addEventListener("pointerdown", (event) => {
+        if ((event.button !== 0) || (event.target === pin)) return;
+        event.preventDefault();
         clearTimeout(removalTimer);
-      });
-
-      window.addEventListener("mousemove", (ev) => {
-        if (!dragging) return;
-
-        const newLeft = ev.clientX - offsetX;
-        const newTop = ev.clientY - offsetY;
-
-        frame.style.left = `${newLeft}px`;
-        frame.style.top = `${newTop}px`;
-      });
-
-      window.addEventListener("mouseup", () => {
-        if (!dragging) return;
-        dragging = false;
-
-        // ⭐ SAVE POSITION PER USER
-        game.settings.set("hover-portrait", "portraitTop", parseInt(frame.style.top));
-        game.settings.set("hover-portrait", "portraitLeft", parseInt(frame.style.left));
-
-        clearTimeout(removalTimer);
-        removalTimer = setTimeout(() => {
-          const wrapper = document.getElementById("hover-wrapper");
-          if (wrapper) wrapper.remove();
-        }, 10000);
+        const dx = event.clientX - frame.offsetLeft;
+        const dy = event.clientY - frame.offsetTop;
+        const move = (e) => {
+          frame.style.left = `${e.clientX - dx}px`;
+          frame.style.top = `${e.clientY - dy}px`;
+        };
+        const up = () => {
+          window.removeEventListener("pointermove", move);
+          window.removeEventListener("pointerup", up);
+          game.settings.set(MODULE, "portraitLeft", parseInt(frame.style.left));
+          game.settings.set(MODULE, "portraitTop", parseInt(frame.style.top));
+          if (!frame.matches(":hover")) scheduleRemoval();
+        };
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", up);
       });
     }
 
-    /* ------------------------------------------------------------
-       PIN BUTTON CLICK (PER-USER SAVE)
-    ------------------------------------------------------------ */
-    pinBtn.addEventListener("click", () => {
-      const newPinned = !pinned;
+    // It stays while the pointer is on it
+    frame.addEventListener("pointerenter", () => clearTimeout(removalTimer));
+    frame.addEventListener("pointerleave", scheduleRemoval);
+  }
 
-      // ⭐ SAVE PIN STATE PER USER
-      game.settings.set("hover-portrait", "portraitPinned", newPinned);
+  /* ------------------------------------------------------------
+     HOVER
+  ------------------------------------------------------------ */
+  Hooks.on("hoverToken", (token, hovered) => {
+    clearTimeout(hoverTimeout);
+    if (!hovered) {
+      if (document.getElementById("hover-wrapper")) scheduleRemoval();
+      return;
+    }
+    if (token.isPreview || !getPortraitPath(token)) return;
+    hoverTimeout = setTimeout(() => showPortrait(token), game.settings.get(MODULE, "hoverDelay"));
+  });
 
-      pinBtn.textContent = newPinned ? "⚔" : "🛡";
+  // A new scene: no portrait of a token that is gone
+  Hooks.on("canvasTearDown", () => {
+    clearTimeout(hoverTimeout);
+    removePortrait();
+  });
 
-      wrapper.remove();
-      Hooks.call("hoverToken", token, true);
-    });
-
-    /* ------------------------------------------------------------
-       MOUSE ENTER / LEAVE LOGIC
-    ------------------------------------------------------------ */
-    frame.addEventListener("mouseenter", () => {
-      clearTimeout(removalTimer);
-    });
-
-    frame.addEventListener("mouseleave", () => {
-      clearTimeout(removalTimer);
-      removalTimer = setTimeout(() => {
-        const wrapper = document.getElementById("hover-wrapper");
-        if (wrapper) wrapper.remove();
-      }, 10000);
-    });
-
-  }, delay);
-});
+  globalThis.HoverPortrait = { getPortraitPath, getAssignedPortrait, showPortrait, removePortrait };
+})();

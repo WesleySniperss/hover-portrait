@@ -2,12 +2,12 @@
   "id": "hover-portrait",
   "title": "Hover Portrait",
   "description": "Displays a portrait or video when hovering a token. Includes a portrait library UI and global portrait directory support.",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "type": "module",
 
   "compatibility": {
-    "minimum": "12",
-    "verified": "13"
+    "minimum": "13",
+    "verified": "14"
   },
 
   "scripts": [
@@ -27,7 +27,7 @@
 
   "packs": [],
 
-  "url": "https://github.com/Ramz1337/hover-portrait",
-  "manifest": "https://raw.githubusercontent.com/Ramz1337/hover-portrait/main/module.json",
-  "download": "https://github.com/Ramz1337/hover-portrait/archive/refs/heads/main.zip"
+  "url": "https://github.com/WesleySniperss/hover-portrait",
+  "manifest": "https://raw.githubusercontent.com/WesleySniperss/hover-portrait/main/module.json",
+  "download": "https://github.com/WesleySniperss/hover-portrait/archive/refs/heads/main.zip"
 }
